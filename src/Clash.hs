@@ -53,6 +53,7 @@ login email password = do
             resp <- httpJSON request
             return (parseLoginResponse resp)
 
+           
 parseLoginResponse :: Response Value -> Maybe LoginResult
 parseLoginResponse resp = parseMaybe (.: "codinGamer") (unwrapObject $ getResponseBody resp)
                         >>= parseMaybe (.: "userId")
@@ -78,7 +79,7 @@ parseGameHandle resp = parseMaybe (.: "publicHandle") (unwrapObject $ getRespons
                      >>= (Just . unwrapString)
 
 handleToLink :: String -> String
-handleToLink handle = "https://www.codingame.com/clashofcode/clash/" ++ handle
+handleToLink = ("https://www.codingame.com/clashofcode/clash/" ++)
 
 unwrapObject :: Value -> Object
 unwrapObject (Object x) = x
