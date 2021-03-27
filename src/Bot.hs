@@ -41,6 +41,7 @@ createClash:: IO (Maybe Text)
 createClash = do
       email <- envAsString "CLASH_EMAIL" ""
       password <- envAsString "CLASH_PASSWORD" ""
+      res <- login email password 
       clashHandle <- case res of
         {(Just cred) -> createPrivateGame [] [] cred
         ; Nothing -> return Nothing
