@@ -1,6 +1,7 @@
 .stack-work/
 *~
-# Project exclude paths
+./execute.bat
+
 /out/
 ### Haskell template
 dist

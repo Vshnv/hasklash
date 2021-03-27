@@ -18,6 +18,27 @@ packages:
       sha256: da91d4e0f5aff5336e3e73ecb1d44fe595dd47bc572335956ba30d937d14573d
   original:
     hackage: mr-env-0.1.0.4
+- completed:
+    hackage: discord-haskell-1.8.3@sha256:5216830fc38f505ba91cd794ca4aeb650c89269267c3fad95a34dfe51ece3a69,3562
+    pantry-tree:
+      size: 2107
+      sha256: 3c9b61962ffe49490c19861c85da44cf0e9966f8cb1f673d39541adf7d839885
+  original:
+    hackage: discord-haskell-1.8.3@sha256:5216830fc38f505ba91cd794ca4aeb650c89269267c3fad95a34dfe51ece3a69,3562
+- completed:
+    hackage: emoji-0.1.0.2@sha256:d995572a5c7dcd28f98eb15c6e387a7b3bda1ac2477ab0d9dba8580d5d7b161f,1273
+    pantry-tree:
+      size: 437
+      sha256: dd9ea90a631342e5db0fc21331ade4d563a685e9125d5a3989eefa8e1b96c6c6
+  original:
+    hackage: emoji-0.1.0.2@sha256:d995572a5c7dcd28f98eb15c6e387a7b3bda1ac2477ab0d9dba8580d5d7b161f,1273
+- completed:
+    hackage: unliftio-0.2.14@sha256:7e6d3de70ad13e2efd14d417a19c1c5b33250cf0f6be9dfc907b39535a661c4a,3366
+    pantry-tree:
+      size: 2352
+      sha256: 7f07d0b0ed71be25a9ea235b2974e1d2ff282210f968fbf25b932cb69351b293
+  original:
+    hackage: unliftio-0.2.14
 snapshots:
 - completed:
     size: 563099

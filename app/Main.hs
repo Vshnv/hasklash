@@ -1,22 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
-import System.Environment.MrEnv ( envAsString )
+import qualified Data.Text.IO as TIO
+import qualified Data.Text as T
 
-import Clash
+import Bot
+import Discord
+import Discord.Types
+import System.Environment.MrEnv (envAsString)
 
 main :: IO ()
-main = do
-  email <- envAsString "CLASH_EMAIL" ""
-  password <- envAsString "CLASH_PASSWORD" ""
-  resp <- login email password
-  execute resp
-
-execute :: Maybe LoginResult -> IO ()    
-execute (Just result) = do
-        game <- createPrivateGame [] [] result
-        case game >>= Just . handleToLink of 
-          {(Just a) -> putStrLn a
-          ;Nothing -> return ()
-          }
-execute Nothing = return ()
+main = do 
+       putStrLn "Running..."
+       botToken <- envAsString "DISCORD_BOT_TOKEN" ""
+       userFacingError <- runDiscord $ def
+                                           { discordToken = T.pack botToken
+                                           , discordOnEvent = commandRouter }
+       TIO.putStrLn userFacingError
+  

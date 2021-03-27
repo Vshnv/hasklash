@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cddf870a0c564dc91df435f1a0fbda010fb6f6634b837764c1d83b4a76dbb0d8
+-- hash: 9fadd24471fbbd5dbcdd6ac1e05b091b40c4665184d50fce7817599b7a713979
 
 name:           ClashBot
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Bot
       Clash
       Lib
   other-modules:
@@ -37,12 +38,14 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
+    , discord-haskell
     , hashmap
     , http-conduit
     , maybe-justify
     , mr-env
     , scientific
     , text
+    , unliftio
     , yaml
   default-language: Haskell2010
 
@@ -58,12 +61,14 @@ executable ClashBot-exe
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , discord-haskell
     , hashmap
     , http-conduit
     , maybe-justify
     , mr-env
     , scientific
     , text
+    , unliftio
     , yaml
   default-language: Haskell2010
 
@@ -80,11 +85,13 @@ test-suite ClashBot-test
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , discord-haskell
     , hashmap
     , http-conduit
     , maybe-justify
     , mr-env
     , scientific
     , text
+    , unliftio
     , yaml
   default-language: Haskell2010

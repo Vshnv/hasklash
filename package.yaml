@@ -30,6 +30,8 @@ dependencies:
 - bytestring
 - aeson
 - yaml
+- discord-haskell
+- unliftio
 
 library:
   source-dirs: src
