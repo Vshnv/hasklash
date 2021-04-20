@@ -1,6 +1,11 @@
 module Lib
-    ( someFunc
+    (unwrapObject
     ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+
+import Data.Aeson ( Value(Object), Object )
+
+
+unwrapObject :: Value -> Object
+unwrapObject (Object x) = x
+unwrapObject _ = error "No Object available"

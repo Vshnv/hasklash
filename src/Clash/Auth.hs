@@ -58,4 +58,3 @@ userIdParser = (.: "codinGamer.userId")
 
 fetchSessionCookies :: JsonResponse Value -> Maybe [String]
 fetchSessionCookies response = responseHeader response "set-cookie" >>= decodeStrict
-

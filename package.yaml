@@ -25,6 +25,10 @@ dependencies:
 - aeson
 - bytestring
 - transformers
+- discord-haskell
+- unliftio
+- text
+- containers
 
 library:
   source-dirs: src

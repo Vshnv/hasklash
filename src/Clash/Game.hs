@@ -1,18 +1,33 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Clash.Game where
-import Control.Monad.IO.Class
 
+
+module Clash.Game (createGame, GameInfo (..), GameOptions (..)) where
+
+
+import Control.Monad.IO.Class ( MonadIO(..) )
+import Control.Monad.Trans.Maybe (MaybeT (..))
+import Clash.Auth ( SessionToken(userId, cookie) )
+import Clash ( defaultHeaders )
 import Data.Aeson.Types (Parser (..), parseMaybe)
 import Data.Aeson ( Value(Object), decodeStrict, (.:), Object )
-import Data.List (intercalate)
-import Network.HTTP.Req
 import qualified Data.ByteString as BS
 import Data.ByteString.Char8 as C8 (pack)
-import Clash.Auth
-import Clash
-import Lib ( unwrapObject )
-import Control.Monad.Trans.Maybe (MaybeT (..))
 import Data.Functor ( (<&>) )
+import Data.List (intercalate)
+import Network.HTTP.Req
+    ( header,
+      responseBody,
+      jsonResponse,
+      req,
+      (/:),
+      https,
+      defaultHttpConfig,
+      runReq,
+      ReqBodyJson(ReqBodyJson),
+      POST(POST),
+      JsonResponse )
+import Lib ( unwrapObject )
+
 
 data GameOptions = GameOptions {
     languages :: [String],
