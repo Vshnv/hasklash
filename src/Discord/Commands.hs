@@ -20,15 +20,7 @@ cmdClash args msg =
     in
         if quick then do
             info <- liftIO $ runMaybeT $ requestPrompt modes langs
-            let joinStr =   "You have been invited to a round of Clash Of Code!\n" ++
-                            " [Click here to Join!](" ++ unpack (maybe ") : Error Fetching Link...(" (handleLink . handle) info) ++ ")"
-            _ <- restCall $ R.CreateMessageEmbed (messageChannel msg) "" $
-                    def {   createEmbedTitle = "Clash Of Code"
-                        ,   createEmbedThumbnail = Just $ CreateEmbedImageUrl
-                            "https://files.codingame.com/codingame/share_pics_clash_of_code.jpg"
-                        ,   createEmbedDescription = pack joinStr
-                        }
-            pure ()
+            sendInviteEmbed (messageChannel msg) info
         else do
             liftIO $ print args
             info <- liftIO $ runMaybeT $ requestPrompt (modeRequest modes) (langRequest langs)
@@ -44,3 +36,19 @@ requestPrompt modes langs = do
 modeRequest = id
 
 langRequest = id
+
+createInviteMessage :: GameInfo -> Text
+createInviteMessage info = 
+    "You have been invited to a round of Clash Of Code!\n" <>
+    "[Click here to Join!](" <> (handleLink . handle) info <> ")"
+
+sendInviteEmbed :: ChannelId -> Maybe GameInfo -> DiscordHandler ()
+sendInviteEmbed channel info = do
+    _ <- restCall $ R.CreateMessageEmbed channel "" $
+                    def {   createEmbedTitle = "Clash Of Code"
+                        ,   createEmbedThumbnail = Just $ CreateEmbedImageUrl
+                            "https://files.codingame.com/codingame/share_pics_clash_of_code.jpg"
+                        ,   createEmbedDescription = maybe "Error creating game... Please try again later!" createInviteMessage info
+                        }
+    pure ()
+    
