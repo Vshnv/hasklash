@@ -16,7 +16,7 @@ import Discord.Types
 import qualified Discord.Requests as R
 import Data.Map as M
 
-type CommandRouteMap = 
+type CommandRouteMap =
     Map Text ([Text] -> Message -> DiscordHandler ())
 
 commandRouter :: Char -> CommandRouteMap -> Event -> DiscordHandler ()
@@ -26,7 +26,9 @@ commandRouter prefix routes (MessageCreate msg)
             commandMeta = T.words $ T.tail msgText
             route = head commandMeta
             args = tail commandMeta
-        in  fromMaybe (pure ())  (M.lookup route routes >>= (\route -> return $ route args msg))            
+        in do
+            fromJust $ M.lookup route routes >>= (\route -> return $ route args msg)
+            pure ()
     | otherwise = return ()
 
 hasCommandPrefix :: Char -> Maybe (Char, Text) -> Bool
@@ -34,7 +36,7 @@ hasCommandPrefix prefix (Just (mPrefix, _)) = prefix == mPrefix
 hasCommandPrefix prefix _ = False
 
 fromUser :: Message -> Bool
-fromUser = not . fromUser
+fromUser = not . fromBot
 
 fromBot :: Message -> Bool
 fromBot m = userIsBot (messageAuthor m)

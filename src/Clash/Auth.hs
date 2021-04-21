@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 
-module Clash.Auth (createSession, Credentials (..), SessionToken (..)) where
+module Clash.Auth (createSession, envEmail, envPassword, Credentials (..), SessionToken (..)) where
 
 import Control.Monad.IO.Class ( MonadIO(..) )
 import Control.Monad.Trans.Maybe (MaybeT (..))
@@ -9,7 +9,7 @@ import Clash ( defaultHeaders )
 import Data.Aeson ( Value(Object), decodeStrict, (.:), Object )
 import Data.Aeson.Types (Parser (..), parseMaybe)
 import Data.Functor ( (<&>) )
-import Lib ( unwrapObject ) 
+import Lib ( unwrapObject )
 import Network.HTTP.Req
     ( responseBody,
       jsonResponse,
@@ -22,16 +22,18 @@ import Network.HTTP.Req
       POST(POST),
       JsonResponse,
       responseHeader )
+import System.Environment
+import qualified Data.Text as T
 
 
 data Credentials = Credentials {
-     email :: String,
-     password :: String
+     email :: T.Text,
+     password :: T.Text
 } deriving Show
 
 data SessionToken = SessionToken {
-    userId :: String,
-    cookie :: [String]
+    userId :: T.Text,
+    cookie :: [T.Text]
 } deriving Show
 
 
@@ -47,14 +49,20 @@ sendLoginRequest (Credentials email password) = runReq defaultHttpConfig $ do
     liftIO $ return r
 
 parseLoginResponse :: JsonResponse Value -> Maybe SessionToken
-parseLoginResponse response = 
+parseLoginResponse response =
         SessionToken <$> userId <*> sessionCookies
-    where 
-        userId = parseMaybe userIdParser . unwrapObject $ responseBody response
-        sessionCookies = fetchSessionCookies response
+    where
+        userId = (parseMaybe userIdParser . unwrapObject $ responseBody response) <&> T.pack
+        sessionCookies = fetchSessionCookies response <&> map T.pack
 
 userIdParser :: Object  -> Parser String
 userIdParser = (.: "codinGamer.userId")
 
 fetchSessionCookies :: JsonResponse Value -> Maybe [String]
 fetchSessionCookies response = responseHeader response "set-cookie" >>= decodeStrict
+
+envEmail :: IO String
+envEmail = getEnv "EMAIL"
+
+envPassword :: IO String
+envPassword = getEnv "PASS"

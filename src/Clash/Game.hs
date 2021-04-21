@@ -26,16 +26,17 @@ import Network.HTTP.Req
       ReqBodyJson(ReqBodyJson),
       POST(POST),
       JsonResponse )
+import qualified Data.Text as T
 import Lib ( unwrapObject )
-
+import qualified Data.Text.Encoding as TEncode
 
 data GameOptions = GameOptions {
-    languages :: [String],
-    modes :: [String]
+    languages :: [T.Text],
+    modes :: [T.Text]
 } deriving Show
 
 data GameInfo = GameInfo {
-    handle :: String,
+    handle :: T.Text,
     options :: GameOptions
 } deriving Show
 
@@ -46,7 +47,7 @@ createGame info token =
         in
     MaybeT $ sendGameCreationRequest languages modes token <&> flip parseGameInfo info
 
-sendGameCreationRequest :: MonadIO m => [String] -> [String] -> SessionToken -> m (JsonResponse Value)
+sendGameCreationRequest :: MonadIO m => [T.Text] -> [T.Text] -> SessionToken -> m (JsonResponse Value)
 sendGameCreationRequest languages modes token = runReq defaultHttpConfig $
         req
             POST
@@ -58,13 +59,13 @@ sendGameCreationRequest languages modes token = runReq defaultHttpConfig $
     where
         loginPath = https "codingame.com" /: "services" /: "ClashOfCode" /: "createPrivateClash"
         payload = (userId token, [("SHORT"::String, True)], languages, modes)
-        sessionCookie = C8.pack $ intercalate ";" $ cookie token
+        sessionCookie =  TEncode.encodeUtf8 $ T.intercalate ";" $ cookie token
 
 parseGameInfo :: JsonResponse Value -> GameOptions -> Maybe GameInfo
 parseGameInfo response =
        (<*>) (GameInfo <$> handle) . Just
     where
-        handle = parseMaybe gameHandleParser (unwrapObject $ responseBody response)
+        handle = parseMaybe gameHandleParser (unwrapObject $ responseBody response) <&> T.pack
 
 
 gameHandleParser :: Object -> Parser String
