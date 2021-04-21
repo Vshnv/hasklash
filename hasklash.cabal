@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fdf098c4a2dfcbc385279bb646e98f1ce9865a36db3483f7c5e4fae37006f6f7
+-- hash: c04a34988b8ce150c748f79478520fa12c0a0cac4ce0153fe44e9d91286faf63
 
 name:           hasklash
 version:        0.1.0.0
@@ -44,7 +44,9 @@ library
     , bytestring
     , containers
     , discord-haskell
+    , http-client
     , req
+    , scientific
     , text
     , transformers
     , unliftio
@@ -64,7 +66,9 @@ executable hasklash-exe
     , containers
     , discord-haskell
     , hasklash
+    , http-client
     , req
+    , scientific
     , text
     , transformers
     , unliftio
@@ -85,7 +89,9 @@ test-suite hasklash-test
     , containers
     , discord-haskell
     , hasklash
+    , http-client
     , req
+    , scientific
     , text
     , transformers
     , unliftio

@@ -1,15 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 
+{-# LANGUAGE DataKinds #-}
 module Clash.Auth (createSession, envEmail, envPassword, Credentials (..), SessionToken (..)) where
 
+
+import Control.Monad
 import Control.Monad.IO.Class ( MonadIO(..) )
 import Control.Monad.Trans.Maybe (MaybeT (..))
 import Clash ( defaultHeaders )
-import Data.Aeson ( Value(Object), decodeStrict, (.:), Object )
+import Data.Aeson ( Value(Object, Number), decodeStrict, (.:), Object)
 import Data.Aeson.Types (Parser (..), parseMaybe)
 import Data.Functor ( (<&>) )
 import Lib ( unwrapObject )
+import Data.Scientific (toBoundedInteger , Scientific)
 import Network.HTTP.Req
     ( responseBody,
       jsonResponse,
@@ -21,9 +25,15 @@ import Network.HTTP.Req
       ReqBodyJson(ReqBodyJson),
       POST(POST),
       JsonResponse,
-      responseHeader )
+      responseHeader,
+      responseCookieJar)
+import Network.HTTP.Client (CookieJar)
 import System.Environment
 import qualified Data.Text as T
+import Data.Maybe
+import Data.ByteString
+import qualified Data.Text.Encoding as TEncode
+
 
 
 data Credentials = Credentials {
@@ -33,7 +43,7 @@ data Credentials = Credentials {
 
 data SessionToken = SessionToken {
     userId :: T.Text,
-    cookie :: [T.Text]
+    cookie :: CookieJar
 } deriving Show
 
 
@@ -49,17 +59,20 @@ sendLoginRequest (Credentials email password) = runReq defaultHttpConfig $ do
     liftIO $ return r
 
 parseLoginResponse :: JsonResponse Value -> Maybe SessionToken
-parseLoginResponse response =
-        SessionToken <$> userId <*> sessionCookies
+parseLoginResponse response = do
+        userId >>= (\x -> Just $ x sessionCookies) . SessionToken
     where
-        userId = (parseMaybe userIdParser . unwrapObject $ responseBody response) <&> T.pack
-        sessionCookies = fetchSessionCookies response <&> map T.pack
+        userId = (parseMaybe userIdParser <=< parseMaybe profileParser $ unwrapObject $ responseBody response) >>= (toBoundedInteger :: Scientific -> Maybe Int) <&> T.pack . show
+        sessionCookies = responseCookieJar response
 
-userIdParser :: Object  -> Parser String
-userIdParser = (.: "codinGamer.userId")
+profileParser :: Object  -> Parser Object
+profileParser = (.: "codinGamer")
 
-fetchSessionCookies :: JsonResponse Value -> Maybe [String]
-fetchSessionCookies response = responseHeader response "set-cookie" >>= decodeStrict
+userIdParser :: Object -> Parser Scientific
+userIdParser = (.: "userId")
+
+fetchSessionCookies :: JsonResponse Value -> Maybe ByteString
+fetchSessionCookies response = responseHeader response "set-cookie"
 
 envEmail :: IO String
 envEmail = getEnv "EMAIL"

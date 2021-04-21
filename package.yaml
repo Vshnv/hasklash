@@ -29,6 +29,8 @@ dependencies:
 - unliftio
 - text
 - containers
+- scientific
+- http-client
 
 library:
   source-dirs: src

@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 
-module Clash.Game (createGame, GameInfo (..), GameOptions (..)) where
+module Clash.Game (createGame, GameInfo (..), GameOptions (..), handleLink) where
 
 
 import Control.Monad.IO.Class ( MonadIO(..) )
@@ -25,7 +25,8 @@ import Network.HTTP.Req
       runReq,
       ReqBodyJson(ReqBodyJson),
       POST(POST),
-      JsonResponse )
+      JsonResponse ,
+      cookieJar)
 import qualified Data.Text as T
 import Lib ( unwrapObject )
 import qualified Data.Text.Encoding as TEncode
@@ -41,25 +42,27 @@ data GameInfo = GameInfo {
 } deriving Show
 
 
+handleLink :: T.Text -> T.Text
+handleLink = ("https://www.codingame.com/clashofcode/clash/" <>)
+
 createGame :: GameOptions -> SessionToken -> MaybeT IO GameInfo
 createGame info token = 
-    let (GameOptions languages modes) = info 
+    let (GameOptions languages modes) = info
         in
-    MaybeT $ sendGameCreationRequest languages modes token <&> flip parseGameInfo info
+    MaybeT $ liftIO $ sendGameCreationRequest languages modes token <&> flip parseGameInfo info
 
 sendGameCreationRequest :: MonadIO m => [T.Text] -> [T.Text] -> SessionToken -> m (JsonResponse Value)
 sendGameCreationRequest languages modes token = runReq defaultHttpConfig $
         req
             POST
-            loginPath
+            creationPath
             (ReqBodyJson payload)
             jsonResponse
-            (defaultHeaders <> header "cookie" sessionCookie)
-            >>= (liftIO . return)
+            (cookieJar sessionCookie <> defaultHeaders)
     where
-        loginPath = https "codingame.com" /: "services" /: "ClashOfCode" /: "createPrivateClash"
+        creationPath = https "codingame.com" /: "services" /: "ClashOfCode" /: "createPrivateClash"
         payload = (userId token, [("SHORT"::String, True)], languages, modes)
-        sessionCookie =  TEncode.encodeUtf8 $ T.intercalate ";" $ cookie token
+        sessionCookie =  cookie token
 
 parseGameInfo :: JsonResponse Value -> GameOptions -> Maybe GameInfo
 parseGameInfo response =
