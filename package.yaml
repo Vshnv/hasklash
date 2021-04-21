@@ -31,6 +31,7 @@ dependencies:
 - containers
 - scientific
 - http-client
+- async
 
 library:
   source-dirs: src

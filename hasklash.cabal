@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c04a34988b8ce150c748f79478520fa12c0a0cac4ce0153fe44e9d91286faf63
+-- hash: fd48852d78e1bc0b5f861b0bc2b7c486477f3ee3488344e042738fbc7e2dc7c1
 
 name:           hasklash
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
       src
   build-depends:
       aeson
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -61,6 +62,7 @@ executable hasklash-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -84,6 +86,7 @@ test-suite hasklash-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
