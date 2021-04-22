@@ -14,17 +14,38 @@ import Discord
 import Discord.Types
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Discord.Commands
-import Discord.Router
+import Discord.Commands ( cmdClash )
+import Discord.Router ( commandRouter, eventRouter, reactionRouter )
 import qualified Data.Map as M
+import Data.Map
+import Data.IORef
+import Discord.ClashBuilder
+import Discord.Reactions
+
+builderMap :: IO (IORef (Map MessageId GameOptionBuilder))
+builderMap = newIORef empty 
+
 
 main :: IO ()
 main =  do
     putStrLn "Running..."
     botToken <- getEnv "DISCORD_BOT_TOKEN"
-    let prefix = '='
-    let routes = M.fromList [("clash", cmdClash)]
+    builderRef <- Main.builderMap
     userFacingError <- runDiscord $ def
                                         {discordToken = T.pack botToken
-                                        ,discordOnEvent = commandRouter prefix routes }
+                                        ,discordOnEvent = eventRouter eventListeners builderRef}
     TIO.putStrLn userFacingError
+
+prefix = '='
+commandRoutes = M.fromList [("clash", cmdClash)]
+
+reactionRoutes = 
+        [
+            reactGameOptions
+        ]
+
+eventListeners builderRef = 
+        [
+            commandRouter prefix commandRoutes builderRef, 
+            reactionRouter reactionRoutes builderRef
+        ]

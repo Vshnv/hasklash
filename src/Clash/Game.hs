@@ -53,15 +53,10 @@ createGame info token =
 
 sendGameCreationRequest :: MonadIO m => [T.Text] -> [T.Text] -> SessionToken -> m (JsonResponse Value)
 sendGameCreationRequest languages modes token = runReq defaultHttpConfig $
-        req
-            POST
-            creationPath
-            (ReqBodyJson payload)
-            jsonResponse
-            (cookieJar sessionCookie <> defaultHeaders)
+        req POST creationPath (ReqBodyJson payload) jsonResponse (cookieJar sessionCookie <> defaultHeaders)
     where
         creationPath = https "codingame.com" /: "services" /: "ClashOfCode" /: "createPrivateClash"
-        payload = (userId token, [("SHORT"::String, True)], languages, modes)
+        payload = (userId token, [("SHORT" :: String, True)], languages, modes)
         sessionCookie =  cookie token
 
 parseGameInfo :: JsonResponse Value -> GameOptions -> Maybe GameInfo

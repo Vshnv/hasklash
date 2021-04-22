@@ -11,9 +11,8 @@ lookupArgument args tag argPrefix =
 
 lookupFlag :: [T.Text] -> T.Text -> T.Text -> Bool
 lookupFlag args tag argPrefix =
-    any ((== (argPrefix <> tag)) . fst) $
-            zip args $ tail (args ++ [""])
+    (argPrefix <> tag) `elem` args
 
 
 
-        
+

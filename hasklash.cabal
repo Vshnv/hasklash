@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fd48852d78e1bc0b5f861b0bc2b7c486477f3ee3488344e042738fbc7e2dc7c1
+-- hash: e82b858538d4e7d92a5a73ed57f30735eabde6752a39dacff078e21a1ec19e75
 
 name:           hasklash
 version:        0.1.0.0
@@ -31,7 +31,9 @@ library
       Clash.Auth
       Clash.Game
       Discord.Arguments
+      Discord.ClashBuilder
       Discord.Commands
+      Discord.Reactions
       Discord.Router
       Lib
   other-modules:

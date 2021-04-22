@@ -10,32 +10,36 @@ import Clash.Game
 import Clash.Auth
 import Control.Monad.IO.Class ( MonadIO(..) )
 import Control.Monad.Trans.Maybe (MaybeT (..))
+import Discord.ClashBuilder
+import Data.IORef
+import Data.Map
 
 
-cmdClash :: [Text] -> Message -> DiscordHandler ()
-cmdClash args msg =
+cmdClash :: [Text] -> IORef (Map MessageId GameOptionBuilder)  -> Message -> DiscordHandler ()
+cmdClash args state msg =
     let quick = lookupFlag args "quick" "--"
         modes = lookupArgument args "m" "-"
         langs = lookupArgument args "l" "-"
     in
         if quick then do
-            info <- liftIO $ runMaybeT $ requestPrompt modes langs
+            info <- liftIO $ runMaybeT $ requestGame modes langs
             sendInviteEmbed (messageChannel msg) info
         else do
-            liftIO $ print args
-            info <- liftIO $ runMaybeT $ requestPrompt (modeRequest modes) (langRequest langs)
+            let builder = GameOptionBuilder { 
+                creator = Discord.Types.userId $ messageAuthor msg,  
+                Discord.ClashBuilder.options = GameOptions modes langs,
+                mode = GameMode
+            }
+            sendBuilderEmbed builder $ messageChannel msg
             pure ()
 
-requestPrompt :: [Text] -> [Text] -> MaybeT IO GameInfo
-requestPrompt modes langs = do
+requestGame :: [Text] -> [Text] -> MaybeT IO GameInfo
+requestGame modes langs = do
     email <- liftIO envEmail
     password <- liftIO envPassword
     session <- createSession $ Credentials { email = T.pack email , password = T.pack password }
     createGame GameOptions { modes = modes, languages = langs } session
 
-modeRequest = id
-
-langRequest = id
 
 createInviteMessage :: GameInfo -> Text
 createInviteMessage info = 
