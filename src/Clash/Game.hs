@@ -48,8 +48,9 @@ handleLink = ("https://www.codingame.com/clashofcode/clash/" <>)
 createGame :: GameOptions -> SessionToken -> MaybeT IO GameInfo
 createGame info token = 
     let (GameOptions languages modes) = info
-        in
-    MaybeT $ liftIO $ sendGameCreationRequest languages modes token <&> flip parseGameInfo info
+        in do
+    liftIO $ print (languages, modes)
+    MaybeT $ liftIO $ sendGameCreationRequest languages (map T.toUpper modes) token <&> flip parseGameInfo info
 
 sendGameCreationRequest :: MonadIO m => [T.Text] -> [T.Text] -> SessionToken -> m (JsonResponse Value)
 sendGameCreationRequest languages modes token = runReq defaultHttpConfig $

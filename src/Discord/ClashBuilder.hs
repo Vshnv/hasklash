@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Discord.ClashBuilder (BuilderMode(..), GameOptionBuilder(..), sendBuilderEmbed, promptLanguages, promptModes, promptSubmit) where
+module Discord.ClashBuilder (BuilderMode(..), GameOptionBuilder(..), sendInviteEmbed, requestGame, sendBuilderEmbed, promptLanguages, promptModes, promptSubmit, promptModesByReaction, promptLangByReaction) where
 
 
 import Data.IORef
@@ -13,6 +13,9 @@ import qualified Data.Text as T
 import Data.Either
 import Control.Monad.IO.Class ( MonadIO(..) )
 import Control.Concurrent
+import Control.Monad.Trans.Maybe (MaybeT (..))
+import Clash.Auth
+
 
 data BuilderMode = GameMode | GameLang deriving Show
 
@@ -22,7 +25,7 @@ data GameOptionBuilder = GameOptionBuilder {
     mode :: BuilderMode
 } deriving Show
 
-sendBuilderEmbed :: GameOptionBuilder -> ChannelId -> DiscordHandler ()
+sendBuilderEmbed :: GameOptionBuilder -> ChannelId -> DiscordHandler (Either RestCallErrorCode Message)
 sendBuilderEmbed builder channel = do
     result <- restCall $ R.CreateMessageEmbed channel "" $
             def {   createEmbedTitle = "Clash Of Code"
@@ -30,7 +33,8 @@ sendBuilderEmbed builder channel = do
                     "https://files.codingame.com/codingame/share_pics_clash_of_code.jpg"
                 ,   createEmbedDescription = description $ mode builder
                 }
-    either (\x -> pure ()) (createBuilderReactions (mode builder) channel) result
+    _ <- either (\x -> pure ()) (createBuilderReactions (mode builder) channel) result
+    pure result
 
 description :: BuilderMode -> T.Text
 description GameMode = "Please select allowed game modes!"
@@ -60,7 +64,7 @@ sendReaction channelId messageId emoteId = do
         pure ()
 
 promptLanguages :: M.Map T.Text T.Text
-promptLanguages = M.fromList 
+promptLanguages = M.fromList
     [
         ("Haskell", "<:Haskell:834798923801296929>"),
         ("Kotlin", "<:Kotlin:834798924157288488>"),
@@ -73,13 +77,45 @@ promptLanguages = M.fromList
         ("Clojure", "<:Clojure:834798923285135471>")
     ]
 
+promptLangByReaction :: M.Map T.Text T.Text
+promptLangByReaction = invertMap promptLanguages
+
 promptModes :: M.Map T.Text T.Text
-promptModes = M.fromList 
+promptModes = M.fromList
     [
         ("Shortest", "🇸"),
         ("Fastest", "🇫"),
         ("Reverse", "🇷")
     ]
 
-promptSubmit :: T.Text 
+promptModesByReaction :: M.Map T.Text T.Text
+promptModesByReaction = invertMap promptModes
+
+promptSubmit :: T.Text
 promptSubmit = "✅"
+
+invertMap :: Ord b => M.Map a b ->  M.Map b a
+invertMap map = M.fromList [(v, k) | (k, v) <- M.toList map]
+
+requestGame :: [T.Text] -> [T.Text] -> MaybeT IO GameInfo
+requestGame modes langs = do
+    email <- liftIO envEmail
+    password <- liftIO envPassword
+    session <- createSession $ Credentials { email = T.pack email , password = T.pack password }
+    createGame GameOptions { modes = modes, languages = langs } session
+
+
+sendInviteEmbed :: ChannelId -> Maybe GameInfo -> DiscordHandler ()
+sendInviteEmbed channel info = do
+    _ <- restCall $ R.CreateMessageEmbed channel "" $
+                    def {   createEmbedTitle = "Clash Of Code"
+                        ,   createEmbedThumbnail = Just $ CreateEmbedImageUrl
+                            "https://files.codingame.com/codingame/share_pics_clash_of_code.jpg"
+                        ,   createEmbedDescription = maybe "Error creating game... Please try again later!" createInviteMessage info
+                        }
+    pure ()
+
+createInviteMessage :: GameInfo -> T.Text
+createInviteMessage info =
+    "You have been invited to a round of Clash Of Code!\n" <>
+    "[Click here to Join!](" <> (handleLink . handle) info <> ")"
