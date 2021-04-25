@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Discord.ClashBuilder (BuilderMode(..), GameOptionBuilder(..), sendInviteEmbed, requestGame, sendBuilderEmbed, promptLanguages, promptModes, promptSubmit, promptModesByReaction, promptLangByReaction) where
+module Discord.ClashBuilder (BuilderMode(..), GameOptionBuilder(..), expandSharps, sendInviteEmbed, requestGame, sendBuilderEmbed, promptLanguages, promptModes, promptSubmit, promptModesByReaction, promptLangByReaction) where
 
 
 import Data.IORef
@@ -17,7 +17,7 @@ import Control.Monad.Trans.Maybe (MaybeT (..))
 import Clash.Auth
 
 
-data BuilderMode = GameMode | GameLang deriving Show
+data BuilderMode = GameMode | GameLang deriving (Show, Eq)
 
 data GameOptionBuilder = GameOptionBuilder {
     creator :: UserId,
@@ -70,12 +70,17 @@ promptLanguages = M.fromList
         ("Kotlin", "<:Kotlin:834798924157288488>"),
         ("Javascript", "<:Javascript:834798924208406538>"),
         ("Java", "<:Java:834798924207489027>"),
-        ("FSharp", "<:FSharp:834798923746115614>"),
+        ("F#", "<:FSharp:834798923746115614>"),
         ("Go", "<:Go:834798923750047804>"),
-        ("CSharp", "<:CSharp:834798923783995466>"),
-        ("Cpp", "<:Cpp:834798923863556096>"),
+        ("C#", "<:CSharp:834798923783995466>"),
+        ("C++", "<:Cpp:834798923863556096>"),
         ("Clojure", "<:Clojure:834798923285135471>")
     ]
+expandSharps :: T.Text  -> T.Text 
+expandSharps txt = case txt of
+    "C#" -> "CSharp"
+    "F#" -> "FSharp"
+    _ -> txt
 
 promptLangByReaction :: M.Map T.Text T.Text
 promptLangByReaction = invertMap promptLanguages

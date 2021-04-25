@@ -4,7 +4,7 @@ module Discord.Commands (cmdClash) where
 import Discord
 import Discord.Types
 import qualified Data.Map as M
-import Data.Text as T
+import qualified Data.Text as T
 import qualified Discord.Requests as R
 import Discord.Arguments
 import Clash.Game
@@ -16,11 +16,11 @@ import Data.IORef
 import Data.Map
 
 
-cmdClash :: [Text] -> IORef (Map MessageId GameOptionBuilder)  -> Message -> DiscordHandler ()
+cmdClash :: [T.Text] -> IORef (Map MessageId GameOptionBuilder)  -> Message -> DiscordHandler ()
 cmdClash args state msg = do
     let quick = lookupFlag args "quick" "--"
-        modes = lookupArgument args "m" "-"
-        langs = lookupArgument args "l" "-"
+        modes = Prelude.filter (`elem` M.keys promptModes) $ lookupArgument args "m" "-"
+        langs = Prelude.filter (`elem` M.keys promptLanguages) $ Prelude.map T.toTitle $ lookupArgument args "l" "-"
     
     _ <- restCall $ R.DeleteMessage (messageChannel msg, messageId msg)
 

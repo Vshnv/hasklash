@@ -48,10 +48,15 @@ commandRouter prefix routes state (MessageCreate msg)
     | otherwise = return ()
 commandRouter _ _ _ _ = return ()
 
-reactionRouter :: ReactionRouterList -> IORef (Map MessageId GameOptionBuilder) -> Event -> DiscordHandler ()
-reactionRouter reactionRouters state (MessageReactionAdd reactInfo) = 
+reactionAddRouter :: ReactionRouterList -> IORef (Map MessageId GameOptionBuilder) -> Event -> DiscordHandler ()
+reactionAddRouter reactionRouters state (MessageReactionAdd reactInfo) = 
     Prelude.mapM_ (\x -> x state reactInfo) reactionRouters
-reactionRouter _ _ _ = return ()
+reactionAddRouter _ _ _ = return ()
+
+reactionRemovalRouter :: ReactionRouterList -> IORef (Map MessageId GameOptionBuilder) -> Event -> DiscordHandler ()
+reactionRemovalRouter reactionRouters state (MessageReactionRemove reactInfo) = 
+    Prelude.mapM_ (\x -> x state reactInfo) reactionRouters
+reactionRemovalRouter _ _ _ = return ()
 
 hasCommandPrefix :: Char -> Maybe (Char, Text) -> Bool
 hasCommandPrefix prefix (Just (mPrefix, _)) = prefix == mPrefix

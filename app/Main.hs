@@ -15,7 +15,7 @@ import Discord.Types
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Discord.Commands ( cmdClash )
-import Discord.Router ( commandRouter, eventRouter, reactionRouter )
+import Discord.Router ( commandRouter, eventRouter, reactionRemovalRouter, reactionAddRouter )
 import qualified Data.Map as M
 import Data.Map
 import Data.IORef
@@ -39,13 +39,20 @@ main =  do
 prefix = '='
 commandRoutes = M.fromList [("clash", cmdClash)]
 
-reactionRoutes = 
+reactionAddRoutes = 
         [
-            reactGameOptions
+            trackGameReactionAdd,
+            trackGameSubmit
+        ]
+
+reactionRemoveRoutes = 
+        [
+            trackGameReactionRemove
         ]
 
 eventListeners builderRef = 
         [
             commandRouter prefix commandRoutes builderRef, 
-            reactionRouter reactionRoutes builderRef
+            reactionAddRouter reactionAddRoutes builderRef,
+            reactionRemovalRouter reactionRemoveRoutes builderRef
         ]
